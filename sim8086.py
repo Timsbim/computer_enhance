@@ -14,14 +14,17 @@ parser.add_argument("file", type=FileType("rb"))
 args = parser.parse_args()
 
 
-# Processing file
+print("; Listing produced by bit manipulation approach")
 print("bits 16", end="\n\n")
+
+# Processing file
 for bytes in args.file:
     # Remove eol chars
     bytes = bytes.rstrip()
 
     # Split byte stream into consecutive pairs
     for i in range(0, len(bytes), 2):
+        
         first_byte = bytes[i]
         OP = first_byte >> 2        # First 6 bits
         D  = (first_byte >> 1) & 1  # 7. bit

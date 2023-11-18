@@ -15,14 +15,19 @@ REGRM_W_ENC = {
     "1001": "sp", "1011": "bp", "1101": "si", "1111": "di",
 }
 
+
+print("; Listing produced by string manipulation approach")
+print("bits 16", end="\n\n")
+
+# Processing file
 with open(FILE_PATH, "rb") as file:
-    print("bits 16", end="\n\n")
     for bytes in file:
         # Converting line of bytes into bin-strings (after removing eol chars)
         bytes = [bin(byte).lstrip("0b") for byte in bytes.rstrip()]    
 
         # Split byte stream into consecutive pairs
         for i in range(0, len(bytes), 2):
+            
             first_byte = bytes[i]
             OP = first_byte[:6]  # First 6 bits
             D  = first_byte[6]   # 7. bit
@@ -44,20 +49,26 @@ with open(FILE_PATH, "rb") as file:
 
 
 # Approach with bit manipulation
+print("\n")
 
 # REG/RM-W field encoding (Table 4-9)
 REGRM_W_ENC = {
     key: r + w for key, (w, r) in enumerate(product("lhx", "acdb"))
 } | {12: "sp", 13: "bp", 14: "si", 15: "di"}
 
+
+print("; Listing produced by bit manipulation approach")
+print("bits 16", end="\n\n")
+
+# Processing file
 with open(FILE_PATH, "rb") as file:
-    print("bits 16", end="\n\n")
     for bytes in file:
         # Remove eol chars
         bytes = bytes.rstrip()
         
         # Split byte stream into consecutive pairs
         for i in range(0, len(bytes), 2):
+            
             first_byte = bytes[i]
             OP = first_byte >> 2        # First 6 bits
             D  = (first_byte >> 1) & 1  # 7. bit
