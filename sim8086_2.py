@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, FileType
 
 
-# Encoding REG/RM-W field encoding (Table 4-9)
+# REG/RM-W field encoding (Table 4-9)
 REGRM_W_ENC = {
     "0000": "al", "0010": "cl", "0100": "dl", "0110": "bl",
     "1000": "ah", "1010": "ch", "1100": "dh", "1110": "bh",
@@ -25,16 +25,16 @@ for bytes in args.file:
     # Split byte stream into consecutive pairs
     for i in range(0, len(bytes), 2):
         first_byte = bytes[i]
-        OPCODE = first_byte[:6]  # First 6 bits
-        D      = first_byte[6]   # 7. bit
-        W      = first_byte[7]   # 8. bit
+        OP = first_byte[:6]  # First 6 bits
+        D  = first_byte[6]   # 7. bit
+        W  = first_byte[7]   # 8. bit
 
         second_byte = bytes[i + 1]
         MOD = second_byte[:2]   # First 2 bits
         REG = second_byte[2:5]  # Bits 3 - 5
         RM  = second_byte[5:]   # Bits 6 - 8
 
-        if OPCODE == "100010" and MOD == "11":
+        if OP == "100010" and MOD == "11":
             reg1 = REGRM_W_ENC[REG + W]
             reg2 = REGRM_W_ENC[RM + W]
             if D == "0":
