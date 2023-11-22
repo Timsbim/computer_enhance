@@ -2,12 +2,12 @@ from argparse import ArgumentParser, FileType
 from itertools import product
 
 
-# REG/RM-W field encoding (Table 4-9)
+# REG/RM-W field encoding (table 4-9)
 REGRM_W_ENC = {
     key: r + w for key, (w, r) in enumerate(product("lhx", "acdb"))
 } | {12: "sp", 13: "bp", 14: "si", 15: "di"}
 
-# R/M encoding for MOD = 00, 01, 10
+# R/M encoding for MOD = 00, 01, 10 (table 4-10)
 RM_ENC = {
     0: "bx + si", 1: "bx + di", 2: "bp + si", 3: "bp + di",
     4: "si", 5: "di", 6: "bp", 7: "bx"
