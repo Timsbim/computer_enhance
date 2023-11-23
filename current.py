@@ -6,5 +6,6 @@ FILE_PATH = "test"
 
 with open(FILE_PATH, "rb") as file:
     bytes = file.read()
-for byte in bytes:
-    print(bin(byte)[2:].zfill(8))
+print(bytes)
+bytes = b"\x00"
+print(int.from_bytes(bytes[0:1], byteorder="little", signed=True))
