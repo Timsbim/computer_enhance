@@ -17,7 +17,7 @@ RM_ENC = {
 def from_bytes(bytes, i, width, signed=False):
     offset = i + width
     bytes = bytes[i: offset]
-    return offset, int.from_bytes(bytes, byteorder="little", signed=signed)
+    return offset, int.from_bytes(bytes, byteorder="little", signed=True)
 
 
 # Read command line argument: input file
@@ -79,7 +79,7 @@ while i < num_bytes:
             regmem = REGRM_W_ENC[RM + W * 8]
         
         i, data = from_bytes(bytes, i, W + 1)
-        data = ("byte" if W == 0 else "word") + str(data)
+        data = ("byte" if W == 0 else "word") + f" {data}"
         print(f"mov {regmem}, {data}")
     
     elif first_byte >> 2 == 34:  # Register/memory to/from register
