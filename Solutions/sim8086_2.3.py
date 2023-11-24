@@ -14,6 +14,12 @@ RM_ENC = {
 }
 
 
+def from_bytes(bytes, i, width, signed=False):
+    offset = i + width
+    bytes = bytes[i: offset]
+    return offset, int.from_bytes(bytes, byteorder="little", signed=signed)
+
+
 # Read command line argument: input file
 parser = ArgumentParser()
 parser.add_argument("file", type=FileType("rb"))
@@ -25,17 +31,11 @@ print("bits 16", end="\n\n")
 
 # Read file
 bytes = args.file.read()
+
+# Processing data
+num_bytes = len(bytes)
 i = 0
-
-
-def from_bytes(width):
-    global i
-    n = int.from_bytes(bytes[i:i + width], byteorder="little", signed=True)
-    i = i + width
-    return n
-
-
-while i < len(bytes):
+while i < num_bytes:
     
     # Process first byte of instruction
     first_byte = bytes[i]
@@ -46,7 +46,7 @@ while i < len(bytes):
         D  = (first_byte >> 1) & 1  # 7. bit
         W  = first_byte & 1         # 8. bit
 
-        addr = from_bytes(W + 1)
+        i, addr = from_bytes(bytes, i, W + 1)
         
         if D == 0:  # Memory-to-accumulator
             print(f"mov ax, [{addr}]")
@@ -65,15 +65,21 @@ while i < len(bytes):
         if MOD < 3:  # Memory mode
             
             if MOD == 0 and RM == 6:  # Direct address
-                regmem = f"[{from_bytes(2)}]"
+                i, disp = from_bytes(bytes, i, 2, True)
+                regmem = f"[{disp}]"
             else:
-                disp = from_bytes(MOD)
+                if MOD == 0:
+                    disp = 0
+                else:
+                    i, disp = from_bytes(bytes, i, MOD, True)
+
                 regmem = f"[{RM_ENC[RM]}" + (f" + {disp}]" if disp != 0 else "]")
         
         else:  # Register mode
             regmem = REGRM_W_ENC[RM + W * 8]
-
-        data = ("byte" if W == 0 else "word") + f" {from_bytes(W + 1)}"
+        
+        i, data = from_bytes(bytes, i, W + 1)
+        data = ("byte" if W == 0 else "word") + f" {data}"
         print(f"mov {regmem}, {data}")
     
     elif first_byte >> 2 == 34:  # Register/memory to/from register
@@ -88,12 +94,15 @@ while i < len(bytes):
         RM  = second_byte & 7         # Bits 6 - 8
 
         reg = REGRM_W_ENC[REG + W * 8]
-        if MOD < 3:  # Memory mode
-            
+        if MOD < 3:  # Memory mode            
             if MOD == 0 and RM == 6:  # Direct address
-                mem = f"[{from_bytes(2)}]"
+                i, disp = from_bytes(bytes, i, 2, True)
+                mem = f"[{disp}]"
             else:
-                disp = from_bytes(MOD)
+                if MOD == 0:
+                    disp = 0
+                else:
+                    i, disp = from_bytes(bytes, i, MOD, True)
                 mem = f"[{RM_ENC[RM]}" + (f" + {disp}]" if disp != 0 else "]")
             
             if D == 0:  # From register into memory
@@ -113,7 +122,7 @@ while i < len(bytes):
         
         W   = (first_byte >> 3) & 1  # 5. bit
 
-        data = from_bytes(W + 1)
+        i, data = from_bytes(bytes, i, W + 1)
         
         print(f"mov {REGRM_W_ENC[(first_byte & 7) + W * 8]}, {data}")
     
