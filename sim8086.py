@@ -20,7 +20,6 @@ parser.add_argument("file", type=FileType("rb"))
 args = parser.parse_args()
 
 
-print("; Listing produced by bit manipulation approach")
 print("bits 16", end="\n\n")
 
 # Read file
@@ -29,6 +28,7 @@ i = 0
 
 
 def from_bytes(width):
+    """Read integer from a byte sequence from bytes"""
     global i
     n = int.from_bytes(bytes[i:i + width], byteorder="little", signed=True)
     i = i + width
