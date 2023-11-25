@@ -78,10 +78,7 @@ while i < len(bytes):
         data = ("byte" if W == 0 else "word") + f" {from_bytes(W + 1)}"
         print(f"mov {regmem}, {data}")
     
-    # MOV, ADD, SUB, CMP: register/memory to/from register
-    elif (OP := (first_byte >> 2)) in {0, 10, 14, 34}:
-
-        op = {0: "add", 10: "sub", 14: "cmp"}.get(OP, "mov")
+    elif first_byte >> 2 == 34:  # MOV: register/memory to/from register
         
         D  = (first_byte >> 1) & 1  # 7. bit
         W  = first_byte & 1         # 8. bit
@@ -102,9 +99,9 @@ while i < len(bytes):
                 mem = f"[{RM_ENC[RM]}" + (f" + {disp}]" if disp != 0 else "]")
             
             if D == 0:  # From register into memory
-                print(f"{op} {mem}, {reg}")
+                print(f"mov {mem}, {reg}")
             else:  # From memory into register
-                print(f"{op} {reg}, {mem}")
+                print(f"mov {reg}, {mem}")
         
         else:  # Register mode
             
@@ -112,7 +109,7 @@ while i < len(bytes):
             if D == 0:
                 reg, reg2 = reg2, reg
             
-            print(f"{op} {reg}, {reg2}")
+            print(f"mov {reg}, {reg2}")
     
     elif first_byte >> 4 == 11:  # MOV: immediate to register
         
