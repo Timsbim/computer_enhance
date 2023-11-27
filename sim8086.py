@@ -16,7 +16,7 @@ RM_ENC = {
 }
 
 # Jumps
-JUMPS = {
+JMP_ENC = {
     116: "jz", 124: "jnge", 126: "jng", 114: "jnae", 118: "jna", 122: "jpe",
     112: "jo", 120: "js", 117: "jnz", 125: "jge", 127: "jg", 115: "jae",
     119: "ja", 123: "jpo", 113: "jno", 121: "jns", 226: "loop", 225: "loope",
@@ -147,7 +147,7 @@ while i < len(bytes):
         print(f"{op} {acc}, {from_bytes(W + 1)}")
 
     # Jumps
-    elif first_byte in JUMPS:
-        print(f"{JUMPS[first_byte]} ${from_bytes(1) + 2:+}")     
+    elif first_byte in JMP_ENC:
+        print(f"{JMP_ENC[first_byte]} ${from_bytes(1) + 2:+}")     
     else:
         print(f"Instruction(s) unknown: {bin(first_byte)[2:].zfill(8)}")
