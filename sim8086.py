@@ -15,6 +15,14 @@ RM_ENC = {
     4: "si", 5: "di", 6: "bp", 7: "bx"
 }
 
+# Jumps
+JUMPS = {
+    116: "jz", 124: "jnge", 126: "jng", 114: "jnae", 118: "jna", 122: "jpe",
+    112: "jo", 120: "js", 117: "jnz", 125: "jge", 127: "jg", 115: "jae",
+    119: "ja", 123: "jpo", 113: "jno", 121: "jns", 226: "loop", 225: "loope",
+    224: "loopne", 227: "jcxz"
+}
+
 
 # Read command line argument: input file
 parser = ArgumentParser()
@@ -110,43 +118,36 @@ while i < len(bytes):
         if MOD < 3:  # Memory mode
             
             if MOD == 0 and RM == 6:  # Direct address
-                mem = f"[{from_bytes(2)}]"
+                regmem = f"[{from_bytes(2)}]"
             else:
                 disp = from_bytes(MOD)
-                mem = f"[{RM_ENC[RM]}" + (f" + {disp}]" if disp != 0 else "]")
+                regmem = f"[{RM_ENC[RM]}" + (f" + {disp}]" if disp != 0 else "]")
             
-            if D == 0:  # From register into memory
-                print(f"{op} {mem}, {reg}")
-            else:  # From memory into register
-                print(f"{op} {reg}, {mem}")
-        
         else:  # Register mode
-            
-            reg2 = REGRM_W_ENC[RM + W * 8]
-            if D == 0:
-                reg, reg2 = reg2, reg
-            
-            print(f"{op} {reg}, {reg2}")
+            regmem = REGRM_W_ENC[RM + W * 8]
+
+        if D == 0:  # From register into memory
+            print(f"{op} {regmem}, {reg}")
+        else:  # From memory into register
+            print(f"{op} {reg}, {regmem}")
 
     # MOV: immediate to register
     elif first_byte >> 4 == 11:
         
         W  = (first_byte >> 3) & 1  # 5. bit
-
         data = from_bytes(W + 1)
-        
         print(f"mov {REGRM_W_ENC[(first_byte & 7) + W * 8]}, {data}")
     
     # ADD, SUB, CMP: Immediate to/from/with accumulator
     elif (OP := (first_byte >> 1)) in {2, 22, 30}:
 
         W = first_byte & 1  # 8. bit
-
         op = {2: "add", 22: "sub", 30: "cmp"}.get(OP)
-
         acc = "ax" if W == 1 else "al"
-        
         print(f"{op} {acc}, {from_bytes(W + 1)}")
 
+    # Jumps
+    elif first_byte in JUMPS:
+        print(f"{JUMPS[first_byte]} ${from_bytes(1) + 2:+}")     
     else:
-        print("Instruction(s) unknown!")
+        print(f"Instruction(s) unknown: {bin(first_byte)[2:].zfill(8)}")
