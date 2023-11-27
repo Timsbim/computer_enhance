@@ -126,9 +126,9 @@ while i < len(bytes):
         else:  # Register mode
             regmem = REGRM_W_ENC[RM + W * 8]
 
-        if D == 0:  # From register into memory
+        if D == 0:  # From register into register/memory
             print(f"{op} {regmem}, {reg}")
-        else:  # From memory into register
+        else:  # From register/memory into register
             print(f"{op} {reg}, {regmem}")
 
     # MOV: immediate to register
