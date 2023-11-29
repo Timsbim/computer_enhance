@@ -24,7 +24,6 @@ JMP_ENC = {
 }
 
 
-# Read command line argument: input file
 parser = ArgumentParser()
 parser.add_argument("file", type=FileType("rb"))
 args = parser.parse_args()
@@ -32,13 +31,11 @@ args = parser.parse_args()
 
 print("bits 16", end="\n\n")
 
-# Read file
 bytes = args.file.read()
 i = 0
 
 
 def from_bytes(width):
-    """Read integer from a byte sequence of width bytes from bytes object at index i"""
     global i
     n = int.from_bytes(bytes[i:i + width], byteorder="little", signed=True)
     i += width
@@ -47,15 +44,14 @@ def from_bytes(width):
 
 while i < len(bytes):
     
-    # Process first byte of instruction
     first_byte = bytes[i]
     i += 1
 
     # MOV: from/to memory to/from accumulator
     if 80 <= (first_byte >> 1) <= 81:
         
-        D = (first_byte >> 1) & 1  # 7. bit
-        W = first_byte & 1         # 8. bit
+        D = (first_byte >> 1) & 1
+        W = first_byte & 1
 
         addr = from_bytes(W + 1)
         
@@ -67,12 +63,12 @@ while i < len(bytes):
     # MOV, ADD, SUB, CMP: intermediate to/from/with register/memory
     elif (OP := (first_byte >> 1)) == 99 or (first_byte >> 2) == 32:
 
-        W  = first_byte & 1  # 8. bit
+        W  = first_byte & 1
     
         second_byte = bytes[i]
         i += 1
-        MOD = second_byte >> 6  # First 2 bits
-        RM  = second_byte & 7   # Bits 6 - 8
+        MOD = second_byte >> 6
+        RM  = second_byte & 7
 
         if OP == 99:
             op = "mov"
@@ -95,7 +91,7 @@ while i < len(bytes):
         if op == "mov":
             data = ("byte" if W == 0 else "word") + f" {from_bytes(W + 1)}"
         else:
-            S  = (first_byte >> 1) & 1  # 7. bit of first byte
+            S  = (first_byte >> 1) & 1
             data = from_bytes(2 if S == 0 and W == 1 else 1)
     
         print(f"{op} {regmem}, {data}")
@@ -105,14 +101,14 @@ while i < len(bytes):
 
         op = {0: "add", 10: "sub", 14: "cmp"}.get(OP, "mov")
         
-        D = (first_byte >> 1) & 1  # 7. bit
-        W = first_byte & 1         # 8. bit
+        D = (first_byte >> 1) & 1
+        W = first_byte & 1
         
         second_byte = bytes[i]
         i += 1
-        MOD = second_byte >> 6        # First 2 bits
-        REG = (second_byte >> 3) & 7  # Bits 3 - 5
-        RM  = second_byte & 7         # Bits 6 - 8
+        MOD = second_byte >> 6
+        REG = (second_byte >> 3) & 7
+        RM  = second_byte & 7
 
         reg = REGRM_W_ENC[REG + W * 8]
         if MOD < 3:  # Memory mode
@@ -134,14 +130,14 @@ while i < len(bytes):
     # MOV: immediate to register
     elif first_byte >> 4 == 11:
         
-        W  = (first_byte >> 3) & 1  # 5. bit
+        W  = (first_byte >> 3) & 1
         data = from_bytes(W + 1)
         print(f"mov {REGRM_W_ENC[(first_byte & 7) + W * 8]}, {data}")
     
     # ADD, SUB, CMP: Immediate to/from/with accumulator
     elif (OP := (first_byte >> 1)) in {2, 22, 30}:
 
-        W = first_byte & 1  # 8. bit
+        W = first_byte & 1
         op = {2: "add", 22: "sub", 30: "cmp"}.get(OP)
         acc = "ax" if W == 1 else "al"
         print(f"{op} {acc}, {from_bytes(W + 1)}")
